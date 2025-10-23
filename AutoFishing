@@ -60,7 +60,7 @@ local function startFishingCycle()
 
     local chargeTime = (workspace.GetServerTimeNow and workspace:GetServerTimeNow()) or tick()
     pcall(function() RFChargeFishingRod:InvokeServer(chargeTime) end)
-    task.wait(0.00001) -- ultra short delay
+    task.wait(0.0001) -- ultra short delay
     pcall(function() RFRequestFishingMinigameStarted:InvokeServer(perfectX, perfectY) end)
 
     local spamConnection
@@ -73,7 +73,7 @@ local function startFishingCycle()
         if spamConnection then spamConnection:Disconnect() end
         if stoppedConnection then stoppedConnection:Disconnect() end
         handleFishingStopped()
-        task.wait(.05)
+        task.wait(.5)
         if autoFishingEnabled then
             startFishingCycle()
         end
