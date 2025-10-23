@@ -34,13 +34,13 @@ ScreenGui.Parent = game:GetService("CoreGui")
 
 ToggleButton.Parent = ScreenGui
 ToggleButton.Size = UDim2.new(0, 100, 0, 30)
-ToggleButton.Position = UDim2.new(0.45, 0, 0.83, -40) -- slightly right + up
+ToggleButton.Position = UDim2.new(0.5, 0, 0.83, -40) -- slightly right + up
 ToggleButton.AnchorPoint = Vector2.new(0.5, 0.5)
 ToggleButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 ToggleButton.TextColor3 = Color3.new(1, 1, 1)
 ToggleButton.TextScaled = true
 ToggleButton.Font = Enum.Font.GothamBold
-ToggleButton.Text = "Auto Fishing: OFF"
+ToggleButton.Text = "Auto Fishing OFF"
 ToggleButton.Active = true
 ToggleButton.AutoButtonColor = false
 ToggleButton.Draggable = true -- works for mobile too
@@ -87,11 +87,11 @@ local function ToggleAutoFishing()
     autoFishingEnabled = not autoFishingEnabled
 
     if autoFishingEnabled then
-        ToggleButton.Text = "Auto Fishing: ON"
+        ToggleButton.Text = "Auto Fishing ON"
         ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
         startFishingCycle()
     else
-        ToggleButton.Text = "Auto Fishing: OFF"
+        ToggleButton.Text = "Auto Fishing OFF"
         ToggleButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
     end
 end
