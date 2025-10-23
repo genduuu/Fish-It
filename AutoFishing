@@ -1,0 +1,94 @@
+--// Auto Fishing Script with Compact Mobile-Friendly GUI (Slightly Right + Up)
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+-- Networking setup
+local net = ReplicatedStorage.Packages._Index 
+    and ReplicatedStorage.Packages._Index["sleitnick_net@0.2.0"] 
+    and ReplicatedStorage.Packages._Index["sleitnick_net@0.2.0"].net
+
+local RFChargeFishingRod = net and net["RF/ChargeFishingRod"]
+local RFRequestFishingMinigameStarted = net and net["RF/RequestFishingMinigameStarted"]
+local REFishingCompleted = net and net["RE/FishingCompleted"]
+local REClaimNotification = net and net["RE/ClaimNotification"]
+local REFishingStopped = net and net["RE/FishingStopped"]
+
+-- Auto Fishing State
+local autoFishingEnabled = false
+local perfectX = -1.233184814453125
+local perfectY = 0.9950508920792316
+
+-- GUI setup (created early so functions can update it)
+local ScreenGui = Instance.new("ScreenGui")
+local ToggleButton = Instance.new("TextButton")
+
+ScreenGui.Name = "AutoFishingToggleGUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = game:GetService("CoreGui")
+
+ToggleButton.Parent = ScreenGui
+ToggleButton.Size = UDim2.new(0, 140, 0, 45) -- smaller size
+ToggleButton.Position = UDim2.new(0.52, 0, 0.83, -40) -- slightly right and up (+40px)
+ToggleButton.AnchorPoint = Vector2.new(0.5, 0.5)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+ToggleButton.TextColor3 = Color3.new(1, 1, 1)
+ToggleButton.TextScaled = true
+ToggleButton.Font = Enum.Font.GothamBold
+ToggleButton.Text = "Auto Fishing: OFF"
+ToggleButton.Active = false
+ToggleButton.Draggable = true -- mobile friendly
+
+-- Handle Fishing Stopped
+local function handleFishingStopped()
+    if REClaimNotification and type(REClaimNotification.FireServer) == "function" then
+        REClaimNotification:FireServer("Fishes")
+    end
+end
+
+-- Start the main fishing loop
+local function startFishingCycle()
+    if not autoFishingEnabled then return end
+    if not (RFChargeFishingRod and RFRequestFishingMinigameStarted and REFishingCompleted) then return end
+
+    local chargeTime = (workspace.GetServerTimeNow and workspace:GetServerTimeNow()) or tick()
+    pcall(function() RFChargeFishingRod:InvokeServer(chargeTime) end)
+    task.wait(0.0000000000001) -- ultra-short delay
+    pcall(function() RFRequestFishingMinigameStarted:InvokeServer(perfectX, perfectY) end)
+
+    local spamConnection
+    spamConnection = RunService.Heartbeat:Connect(function()
+        pcall(function() REFishingCompleted:FireServer() end)
+    end)
+
+    local stoppedConnection
+    stoppedConnection = REFishingStopped and REFishingStopped.OnClientEvent:Connect(function()
+        if spamConnection then spamConnection:Disconnect() end
+        if stoppedConnection then stoppedConnection:Disconnect() end
+        handleFishingStopped()
+        task.wait(1)
+        if autoFishingEnabled then
+            startFishingCycle()
+        end
+    end)
+end
+
+-- Manual control
+function StartAutoFishing()
+    if autoFishingEnabled then return end
+    autoFishingEnabled = true
+    ToggleButton.Text = "Auto Fishing: ON"
+    ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+    startFishingCycle()
+end
+
+function StopAutoFishing()
+    if not autoFishingEnabled then return end
+    autoFishingEnabled = false
+    ToggleButton.Text = "Auto Fishing: OFF"
+    ToggleButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+end
+
+print("✅ AutoFishing GUI loaded. Use StartAutoFishing() / StopAutoFishing() manually.")
